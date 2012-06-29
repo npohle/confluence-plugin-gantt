@@ -1,0 +1,201 @@
+/*
+ * Ext Gantt 1.2
+ * Copyright(c) 2009-2011 Mats Bryntse Consulting
+ * mats@ext-scheduler.com
+ * http://www.ext-scheduler.com/license.html
+ *
+ */
+
+.sch-dependency-line
+{
+    position: absolute;
+    border: 1px solid blue;
+    overflow: hidden;
+}
+
+.sch-dependency-line
+{
+    z-index: 2;
+}
+
+.sch-dependency-selected
+{
+    z-index:4;
+}
+
+.sch-dependency-arrow,
+.sch-dependency-arrow-ct
+{   
+    z-index: 3;
+    position: absolute;
+    height: 0px;
+    width: 0px;
+    border-style: solid;
+    line-height: 0;     /* Required for IE in quirks mode*/
+}
+
+.sch-dependency-arrow-ct
+{
+    background:transparent;
+    border:0 none;
+}
+
+.sch-dependency-arrow-left
+{
+    margin-top: -4px;
+    margin-left: -8px;
+    border-color: transparent blue transparent transparent;
+    border-width: 4px 8px 4px 0;
+}
+
+.sch-dependency-arrow-right
+{
+    margin-top: -3px;
+    border-width: 4px 0 4px 8px;
+    border-color: transparent transparent transparent blue;
+}
+
+.sch-dependency-arrow-down
+{
+    margin-left: -3px;
+    border-color: blue transparent;
+    border-width: 8px 4px 0;
+}
+
+
+.sch-gantt-terminal
+{
+    display: none;
+    background: url(../images/dependencyterminal.png) no-repeat;
+    height: 16px;
+    width: 16px;
+    position: absolute;
+    top: 0;
+    z-index: 10000;
+    background-position: -6px 0;
+}
+
+.sch-gantt-terminal-start
+{
+    left: -15px;
+}
+
+.sch-gantt-terminal-end
+{
+    right: -15px;
+}
+
+.sch-gantt-terminal-end
+{
+    right: -15px;
+}
+
+.sch-event-hover .sch-gantt-terminal
+{
+    cursor: pointer !important;
+    display: block;
+}
+
+div.sch-gantt-terminal:hover
+{
+    background-position: -6px -16px;
+}
+
+.sch-event-wrap .sch-event-hover
+{
+    z-index: 2000;
+}
+
+.x-dd-drag-proxy .sch-gantt-terminal,
+.sch-ganttpanel-readonly .sch-gantt-terminal
+{
+    display: none;
+}
+
+.x-dd-drag-proxy .sch-dependency
+{
+    display: none;
+}
+
+.sch-gantt-terminal-start-drophover
+{
+    background-position: 0 -48px !important;
+    width: 28px;
+    left: -21px;
+}
+
+.sch-gantt-terminal-end-drophover
+{
+    background-position: 0 -32px !important;
+    width: 28px;
+    right: -21px;
+}
+
+.sch-gantt-dep-dd-dragging .sch-gantt-terminal
+{
+    display: block;
+}
+
+.sch-gantt-dep-dd-dragging .x-resizable-handle
+{
+    display: none !important;
+}
+
+.sch-gantt-connector-proxy
+{
+    position: absolute;
+    width: 2px;
+    border-left: 2px dashed gray;
+    z-index: 10000;
+    transform-origin: 0 0;
+    -o-transform-origin: 0 0;
+    -moz-transform-origin: 0 0;
+    -webkit-transform-origin: 0 0;
+}
+
+.sch-gantt-critical-chain .sch-dependency
+{
+    display:none;
+}
+
+.sch-gantt-critical-chain .sch-dependency-selected
+{
+    display:block;
+}
+
+div.sch-dependency-line.sch-dependency-selected
+{
+    border-color: red;
+}
+
+img.sch-dependency-arrow-down.sch-dependency-selected
+{
+    border-top-color: red;
+    border-bottom-color: red;
+}
+
+img.sch-dependency-arrow-left.sch-dependency-selected
+{
+    border-right-color: red;
+}
+
+img.sch-dependency-arrow-right.sch-dependency-selected
+{
+    border-left-color: red;
+}
+
+.ext-border-box .sch-dependency-selected .sch-dependency-arrow-left
+{
+    border-right-color: red;
+}
+
+.ext-border-box .sch-dependency-selected .sch-dependency-arrow-down
+{
+    border-top-color: red;
+    border-bottom-color: red;
+}
+
+.ext-border-box .sch-dependency-selected .sch-dependency-arrow-right
+{
+    border-left-color: red;
+}

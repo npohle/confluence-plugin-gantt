@@ -1,0 +1,384 @@
+	
+		<!--Ext and ux styles -->
+        
+		<script src="$staticResourcePrefix/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/extjs-4.0.7/ext-all.js" type="text/javascript"></script>
+		
+        <script>
+        	Ext.Loader.setConfig({enabled: false, disableCaching : false });
+        </script>
+        
+        <!--Scheduler styles-->
+		
+        <link href="$staticResourcePrefix/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/scheduler-2.0.8/css/sch-all.css" rel="stylesheet" type="text/css" />
+        <script src="$staticResourcePrefix/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/scheduler-2.0.8/js/sch-all-debug.js" type="text/javascript"></script>
+        
+		
+        <!--Example styles -->
+		
+        <link href="$staticResourcePrefix/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/scheduler-2.0.8/css/examples.css" rel="stylesheet" type="text/css" />
+        <link href="$staticResourcePrefix/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/scheduler-2.0.8/css/editor.css" rel="stylesheet" type="text/css" />
+        
+		
+        <!--Project files-->
+		
+        <script src="$staticResourcePrefix/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/gantt4confluence/ProjectMask.js" type="text/javascript"></script>
+		<link rel="stylesheet" type="text/css" href="$staticResourcePrefix/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/css/normalize.css" />
+        <link rel="stylesheet" type="text/css" href="$staticResourcePrefix/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/extjs-4.0.7/resources/css/ext-all-gray.css"/>
+        
+        
+        <style>
+        .verticalAlignTop { vertical-align:top; }
+        </style>
+        
+        <script>
+
+		var progress = null;				
+		var projectpanels = [];
+
+        Ext.define('Resource', {
+        	extend : 'Sch.model.Resource',
+        	fields: ['Budget','KTR','EstimatedBudget','CurrentBudget','EstimatedETA','CurrentETA','Category']
+        });
+	  
+        Ext.define('Event', {
+        	extend : 'Sch.model.Event',
+        	nameField : 'Title',
+	    	fields: ['Type','EventType','Title','Location']
+        });
+	  	
+		function save() {
+		  
+		  var projects = [];
+		  
+		  for (var index=0; index<projectpanels.length; index++) {
+		    var panel = projectpanels[index];
+		    var lookbackarray=[];
+		    var lookaheadarray=[];
+		    var lookbackstore=panel.getComponent('lookbackgridpanel').getComponent('lookbackgrid').store;
+		    var lookaheadstore=panel.getComponent('lookaheadgridpanel').getComponent('lookaheadgrid').store;
+		    lookbackstore.each(
+		    	function(record) {
+		    		var date = record.get('date');
+		    		if (date!=null && (typeof date)=='string' && date.length>10) {date = date.substring(0,10);}
+		    		if (date!=null && (typeof date)=='object') {date = Ext.Date.format(date,'Y-m-d');}
+		    		if (date==null) {date = "";}
+		    		var end = record.get('end');
+		    		if (end!=null && (typeof end)=='string' && end.length>10) {end = end.substring(0,10);}
+		    		if (end!=null && (typeof end)=='object') {end = Ext.Date.format(end,'Y-m-d');}
+		    		if (end==null) {end = "";}
+		    		lookbackarray.push({'date': date, 'end': end,'ev':record.get('ev'),'milestone':record.get('milestone')})
+		    	}
+		    );
+		    lookaheadstore.each(
+		    	function(record) {
+		    		var date = record.get('date');
+		    		if (date!=null && (typeof date)=='string' && date.length>10) {date = date.substring(0,10);}
+		    		if (date!=null && (typeof date)=='object') {date = Ext.Date.format(date,'Y-m-d');}
+		    		if (date==null) {date = "";}
+		    		var end = record.get('end');
+		    		if (end!=null && (typeof end)=='string' && end.length>10) {end = end.substring(0,10);}
+		    		if (end!=null && (typeof end)=='object') {end = Ext.Date.format(end,'Y-m-d');}
+		    		if (end==null) {end = "";}
+		    		lookaheadarray.push({'date': date,'end': end,'ev':record.get('ev'),'milestone':record.get('milestone')})
+		    	}
+		    );
+		    projects.push({
+		      'lookback':lookbackarray,
+		      'lookahead':lookaheadarray,
+		      'title': panel.getComponent('titlefieldpanel').getComponent('titlefield').getValue(),
+		      'description': panel.getComponent('descriptionfieldpanel').getComponent('descriptionfield').getValue(),
+		      'risks': panel.getComponent('riskfieldpanel').getComponent('riskfield').getValue(),
+		      'evaluation': panel.getComponent('evaluationfieldpanel').getComponent('evaluationfield').getValue(),
+		      'properties': panel.getComponent('propertygridpanel').getComponent('propertygrid').source
+		    });    
+		  }
+		  
+		  var jsonstring = Ext.JSON.encode(projects);
+		  console.log(jsonstring);
+		  
+		  Ext.Ajax.request({
+        	url: '$baseURL/plugins/servlet/gantt4confluence',
+        	method : 'POST', 
+        	params: {
+        		action: 'save', 
+        		pageid: '${pageid}', 
+        		filename: '${filename}',
+        		body: jsonstring
+        		},
+        	scope: this,
+        	success: function(response){
+        		Ext.MessageBox.alert('Status', 'Changes saved successfully.', response);
+        		}, 
+        	failure: function(response){ 
+        		Ext.MessageBox.alert('Status', 'Failure during save operation.', response); 
+        		} 
+        	});
+		}
+				
+		function render(json) {
+		
+			  // include Scheduler
+			  			  
+			  var resourceStore = Ext.create("Ext.data.JsonStore", {
+        		model   : 'Resource',
+        		groupField : 'Category',
+        		sortInfo: { field: 'Id', direction: "ASC" }
+     		  });
+			  
+	          var eventStore = Ext.create("Ext.data.JsonStore", {
+	            model   : 'Event'
+	          });
+	          
+	          var groupingFeature = Ext.create('Ext.grid.feature.Grouping', {});
+			  
+	          var start = new Date(2011, 1, 1);
+	          
+	          progress.updateProgress(0.2, 'Initialize Scheduler'); 
+	          
+			  var g = new Sch.panel.SchedulerGrid({
+	            width : 900,
+	            height : 400,
+	            enableDragCreation : false,
+	            enableEventDragDrop : false,
+	            eventResizeHandles: 'none',
+	            renderTo: 'scheduler-div',
+	            features : [groupingFeature],
+	            
+	            // Setup view configuration
+	            startDate : start,
+	            endDate : Sch.util.Date.add((new Date()),Sch.util.Date.YEAR, 2),
+	            viewPreset : 'weekAndMonth',
+	            rowHeight : 30,
+				
+	            /// Setup your static columns
+	            columns : [
+	                {header : 'Project', width:200, dataIndex : 'Name'}
+	            ],
+				
+	            viewConfig : { forceFit : false },
+	            eventBarTextField : 'Name',
+	            
+	            resourceStore : resourceStore,
+	            eventStore : eventStore,
+	            
+	            plugins : [
+	                new Sch.plugin.Pan({
+	                    enableVerticalPan : true
+	                })
+	            ],
+	            
+	            tbar : [
+                	{
+	                    text : 'Weeks',
+	                    toggleGroup : 'presets',
+	                    enableToggle : true,
+	                    iconCls : 'icon-calendar',
+	                    handler : function() {
+	                        g.switchViewPreset(
+	                        	'weekAndMonth',
+	                        	new Date(2011, 1, 1), 
+	                        	Sch.util.Date.add((new Date()),Sch.util.Date.YEAR, 2)
+	                        );
+	                    }
+	                },
+	                {
+	                    text : 'Months',
+	                    toggleGroup : 'presets',
+	                    iconCls : 'icon-calendar',
+	                    handler : function() {
+	                        g.switchViewPreset(
+	                        	'monthAndYear',
+	                        	new Date(2011, 1, 1), 
+	                        	Sch.util.Date.add((new Date()),Sch.util.Date.YEAR, 2)
+	                        );
+	                    }
+	                },
+	                {
+	                    text : 'Years',
+	                    enableToggle : true,
+	                    toggleGroup : 'presets',
+	                    iconCls : 'icon-calendar',
+	                    handler : function() {
+	                        g.switchViewPreset(
+	                        	'year',
+	                        	new Date(2011, 1, 1), 
+	                        	Sch.util.Date.add((new Date()),Sch.util.Date.YEAR, 2)
+	                        );
+	                    }
+	                },
+                ]
+                
+	          });
+			  
+			  //Ext.create('Ext.resizer.Resizer', {
+			  //      el: g.body,
+			  //      pinned: true,
+			  //      handles: 'se',
+			  // });
+			  
+			  //var jsonstring = '[{"lookback":[{"date":"2012-01-01","ev":"0 EUR","milestone":"kick off"},{"date":"2012-01-07","ev":"100 EUR","milestone":"initial setup"},{"date":"2012-01-14","ev":"500 EUR","milestone":"alpha"},{"date":"2012-01-21","ev":"1000 EUR","milestone":"beta"}],"lookahead":[{"date":"2012-02-01","ev":"2000 EUR","milestone":"release"},{"date":"2012-02-07","ev":"3000 EUR","milestone":"maintainance 1"},{"date":"2012-02-14","ev":"10000 EUR","milestone":"maintainance 2"},{"date":"2012-02-21","ev":"25000 EUR","milestone":"maintainance 3"}],"title":"test","description":"","risks":"","evaluation":"","properties":{"Budget":"5.000 EUR","Estimated ETA":"2012-01-01T00:00:00","Current ETA":"","KTR":"","PfM / tPL":""}},{"lookback":[{"date":"2012-01-01","ev":"0 EUR","milestone":"kick off"},{"date":"2012-01-07","ev":"100 EUR","milestone":"initial setup"},{"date":"2012-01-14","ev":"500 EUR","milestone":"alpha"},{"date":"2012-01-21","ev":"1000 EUR","milestone":"beta"}],"lookahead":[{"date":"2012-02-01","ev":"2000 EUR","milestone":"release"},{"date":"2012-02-07","ev":"3000 EUR","milestone":"maintainance 1"},{"date":"2012-02-14","ev":"10000 EUR","milestone":"maintainance 2"},{"date":"2012-02-21","ev":"25000 EUR","milestone":"maintainance 3"}],"title":"test2","description":"irgendwas anderes","risks":"","evaluation":"","properties":{"Budget":"10.000 EUR","Estimated ETA":"2012-01-01T00:00:00","Current ETA":"","KTR":"","PfM / tPL":""}}]';
+			  //var daten = Ext.JSON.decode(jsonstring);
+			  console.log("Load JSON: "+json);
+			  var daten = Ext.JSON.decode(json);
+			  console.log(daten.length);
+			  for (var index=0; index<daten.length; index++) {
+			  	
+			  	progress.updateProgress((0.8 / daten.length * index) + 0.2, 'Load '+daten[index].title);
+			  
+			  	console.log(index);
+			    var panel = Ext.create('MyApp.view.ui.MyPanel');
+			    projectpanels.push(panel);
+			    panel.getComponent('lookbackgridpanel').getComponent('lookbackgrid').store.loadData(daten[index].lookback);
+			    panel.getComponent('lookaheadgridpanel').getComponent('lookaheadgrid').store.loadData(daten[index].lookahead);
+			    panel.getComponent('titlefieldpanel').getComponent('titlefield').setValue(daten[index].title);
+			    panel.getComponent('descriptionfieldpanel').getComponent('descriptionfield').setValue(daten[index].description);
+			    panel.getComponent('riskfieldpanel').getComponent('riskfield').setValue(daten[index].risks);
+			    panel.getComponent('evaluationfieldpanel').getComponent('evaluationfield').setValue(daten[index].evaluation);
+			    
+			    
+			    var props = {};
+			    if (daten[index].properties['Budget']!=null)			{props['Budget']=daten[index].properties['Budget']}							else {props['Budget']=''};
+			    if (daten[index].properties['KTR']!=null)				{props['KTR']=daten[index].properties['KTR']}								else {props['KTR']=''};
+			    if (daten[index].properties['Estimated ETA']!=null)		{props['Estimated ETA']=daten[index].properties['Estimated ETA']}			else {props['Estimated ETA']=''};
+			    if (daten[index].properties['Current ETA']!=null)		{props['Current ETA']=daten[index].properties['Current ETA']}				else {props['Current ETA']=''};
+			    if (daten[index].properties['Estimated Budget']!=null)	{props['Estimated Budget']=daten[index].properties['Estimated Budget']}		else {props['Estimated Budget']=''};
+			    if (daten[index].properties['Current Budget']!=null)	{props['Current Budget']=daten[index].properties['Current Budget']}			else {props['Current Budget']=''};
+			    if (daten[index].properties['Category']!=null)			{props['Category']=daten[index].properties['Category']}						else {props['Category']=''};
+			    if (daten[index].properties['PfM / tPL']!=null)			{props['PfM / tPL']=daten[index].properties['PfM / tPL']}					else {props['PfM / tPL']=''};
+			    
+			    //panel.getComponent('propertygridpanel').getComponent('propertygrid').setSource(daten[index].properties);
+			    panel.getComponent('propertygridpanel').getComponent('propertygrid').setSource(props);
+			    
+			    resourceStore.add({
+			    	'Id': daten[index].title,
+			    	'Name': daten[index].title,
+			    	'Budget':daten[index].properties['Budget'],
+			    	'KTR':daten[index].properties['KTR'],
+			    	'EstimatedETA':daten[index].properties['Estimated ETA'],
+			    	'CurrentETA':daten[index].properties['Current ETA'],
+			    	'EstimatedBudget':daten[index].properties['Estimated Budget'],
+			    	'CurrentBudget':daten[index].properties['Current Budget'],
+			    	'Category':daten[index].properties['Category']
+			    });
+			    
+			    for (var i=0; i<daten[index].lookback.length; i++) {
+			    	
+			    	var startdate = daten[index].lookback[i].date.substring(0,10);
+			    	var enddate = ""; 
+			    				    	
+			    	if (startdate.length==10) {
+				    	
+				    	if (daten[index].lookback[i].end!=null) {enddate = daten[index].lookback[i].end.substring(0,10);}
+				    	if (enddate==null || enddate.length<10) {
+			    			enddate = Ext.Date.format(Ext.Date.add(Ext.Date.parse(startdate, 'Y-m-d'),Ext.Date.DAY, 1),'Y-m-d');
+			    		};
+						
+				    	eventStore.add({
+				    		'Id': daten[index].lookback[i].milestone,
+				    		'Name': daten[index].lookback[i].milestone,
+				    		'StartDate': startdate,
+				    		'EndDate': enddate,
+				    		'ResourceId':daten[index].title
+				    	});
+			    	}
+			    };
+
+			    for (var i=0; i<daten[index].lookahead.length; i++) {
+			    	
+			    	var startdate = daten[index].lookahead[i].date.substring(0,10);
+			    	var enddate = "";
+			    	
+			    	if (startdate.length==10) {
+				    	
+				    	if (daten[index].lookahead[i].end!=null) {enddate = daten[index].lookahead[i].end.substring(0,10);}
+				    	if (enddate==null || enddate.length<10) {
+			    			enddate = Ext.Date.format(Ext.Date.add(Ext.Date.parse(startdate, 'Y-m-d'),Ext.Date.DAY, 1),'Y-m-d');
+			    		};
+						
+				    	eventStore.add({
+				    		'Id': daten[index].lookahead[i].milestone,
+				    		'Name': daten[index].lookahead[i].milestone,
+				    		'StartDate': startdate,
+				    		'EndDate': enddate,
+				    		'ResourceId':daten[index].title
+				    	});
+			    	}
+			    };
+			    
+			    g.scrollToDate(Sch.util.Date.add((new Date()),Sch.util.Date.DAY, -10), true);
+			    
+			  }		
+		}
+		
+		function addproject() {
+			var panel = Ext.create('MyApp.view.ui.MyPanel');
+			projectpanels.push(panel);
+			panel.getComponent('lookbackgridpanel').getComponent('lookbackgrid').store.add({ date: '', end:'', ev: '', milestone: '' });
+			panel.getComponent('lookaheadgridpanel').getComponent('lookaheadgrid').store.add({ date: '', end:'', ev: '', milestone: '' });
+			
+		}
+		
+		function deleteproject() {
+			
+			var newprojectpanels = [];
+			
+			for (var index=0; index<projectpanels.length; index++) {
+		    	var panel = projectpanels[index];
+		    	var checkboxfield = panel.getComponent('titlefieldpanel').getComponent('checkboxfield');
+		    	console.log(index+" "+checkboxfield.getValue());
+		    	if (checkboxfield.getValue()) {
+		    		panel.destroy();
+		    	} else {
+		    		newprojectpanels.push(projectpanels[index]);
+		    	}
+		    }
+		    projectpanels = newprojectpanels;
+		}
+		
+		Ext.onReady(function() {
+			
+			progress = Ext.create('Ext.ProgressBar', {
+				renderTo: 'splash',
+				width: 300
+			});
+			
+			progress.updateProgress(0.1, 'Load Project Data');
+			
+			Ext.Ajax.request({
+				url : '$baseURL/plugins/servlet/gantt4confluence?action=get&pageid=${pageid}&filename=${filename}' ,
+				method: 'GET',
+				success: function ( result, request ) {
+					progress.updateProgress(0.15, 'Process Project Data');
+					console.log('received '+result.responseText);
+					var jsonstring = result.responseText; 
+					if (jsonstring.length==0) {
+						jsonstring = new String("[{'lookback':[{'date':'','end':'','ev':'','milestone':''}],'lookahead':[{'date':'','end':'','ev':'','milestone':''}],'title':'','description':'','risks':'','evaluation':'','properties':{'Budget':'','Estimated ETA':'','Current ETA':'','KTR':'','PfM / tPL':''}}]");
+					}
+					render(jsonstring);
+					progress.destroy();
+				},
+				failure: function ( result, request) { 
+					//Ext.MessageBox.alert('Failed', result.responseText);
+					progress.updateProgress(0.15, 'Process Project Data');
+					console.log("could not load attachment {$filename}... Fallback to empty project set.");
+					var jsonstring = new String("[{'lookback':[{'date':'','end':'','ev':'','milestone':''}],'lookahead':[{'date':'','end':'','ev':'','milestone':''}],'title':'','description':'','risks':'','evaluation':'','properties':{'Budget':'','Estimated ETA':'','Current ETA':'','KTR':'','PfM / tPL':''}}]");
+					render(jsonstring);
+					progress.destroy(); 
+				} 
+			});
+			
+		});
+		
+		</script>
+		
+		
+		<div id="splash" style="width:300px">
+			<!-- <img src="$baseURL/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/gantt4confluence/images/ajax-loader.gif" /> -->
+		</div>
+		<div id="scheduler-div"></div>
+		<br>
+		<div id="gantt4confluence"></div>
+		
+		<input type="button" value="Speichern" onClick="save()"/>
+		<input type="button" value="Add Project" onClick="addproject()"/>
+		<input type="button" value="Delete Project" onClick="deleteproject()"/>

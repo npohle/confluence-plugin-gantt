@@ -1,0 +1,70 @@
+﻿/*
+ * Ext Gantt 1.2
+ * Copyright(c) 2009-2011 Mats Bryntse Consulting
+ * mats@ext-scheduler.com
+ * http://www.ext-scheduler.com/license.html
+ *
+ */
+
+.sch-gantt-item .x-resizable-handle
+{
+	opacity:0;
+	display:none;
+	height: 100%;
+}
+
+.ext-border-box .sch-gantt-item .x-resizable-handle
+{
+	top:1px;
+}
+
+.sch-gantt-item .x-resizable-handle-east
+{
+	right:-2px;
+	-moz-border-radius-topright: inherit;	
+    -webkit-border-top-right-radius:inherit;
+    -o-border-top-right-radius: inherit;
+    border-top-right-radius: inherit;
+    -moz-border-radius-bottomright: inherit;	
+    -webkit-border-bottom-right-radius:inherit;
+    -o-border-bottom-right-radius: inherit;
+    border-bottom-right-radius: inherit;
+}
+
+.sch-gantt-item .x-resizable-handle-west
+{
+    -moz-border-radius-topleft: inherit;	
+    -webkit-border-top-left-radius:inherit;
+    -o-border-top-left-radius: inherit;
+    border-top-left-radius: inherit;
+    -moz-border-radius-bottomleft: inherit;	
+    -webkit-border-bottom-left-radius:inherit;
+    -o-border-bottom-left-radius: inherit;
+    border-bottom-left-radius: inherit;
+}
+
+.ext-border-box .sch-gantt-item .x-resizable-handle-east
+{
+	right:0;
+}
+
+.sch-event-wrap .sch-event-hover .x-resizable-handle
+{
+	display:block;
+	opacity:1 !important;
+	filter: alpha(opacity=100);
+	background-position: left;
+	background-image: url(http://extjs.cachefly.net/ext-3.1.1/resources/images/default/sizer/e-handle.gif);
+}
+
+.x-resizable-over .sch-dependency
+{
+	display:none;
+}
+
+.sch-event-endsoutside .x-resizable-handle-east,
+.sch-event-startsoutside .x-resizable-handle-west,
+.sch-ganttpanel-readonly .x-resizable-handle
+{
+	display:none !important;
+}

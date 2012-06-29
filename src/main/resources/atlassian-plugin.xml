@@ -1,0 +1,24 @@
+<atlassian-plugin key="${project.groupId}.${project.artifactId}" name="${project.name}" plugins-version="2">
+    <plugin-info>
+        <description>${project.description}</description>
+        <version>1.1</version>
+        <vendor name="Imaginary Machines" url="http://www.imaginarymachines.com" />
+    </plugin-info>
+
+	<resource type="download" name="extjs-4.0.7/" location="extjs-4.0.7"/>
+	<resource type="download" name="scheduler-2.0.8/" location="scheduler-2.0.8"/>
+	<resource type="download" name="css/" location="css"/>
+	<resource type="download" name="gantt4confluence/" location="gantt4confluence"/>
+	
+	<macro name="gantt4confluence" class="com.imaginarymachines.confluence.gantt.GanttMacro" key="gantt4confluence">
+		<description>Embedd an editable Gantt Chart into your page.</description>
+	</macro>
+	
+	<servlet name="Gantt Servlet" key="ganttservlet" class="com.imaginarymachines.confluence.gantt.GanttServlet">
+		<description>Endpoint for XHR Calls from the Gantt Macro.</description>
+		<url-pattern>/gantt4confluence</url-pattern>
+	</servlet>
+	
+
+	
+</atlassian-plugin>

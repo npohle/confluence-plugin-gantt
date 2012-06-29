@@ -1,0 +1,20 @@
+﻿/*
+ * Ext Gantt 1.2
+ * Copyright(c) 2009-2011 Mats Bryntse Consulting
+ * mats@ext-scheduler.com
+ * http://www.ext-scheduler.com/license.html
+ *
+ */
+
+.sch-gantt-dependencyeditor
+{
+    z-index:5000;
+    top:-1000px;
+    left:-1000px;
+    position:absolute;
+}
+
+.sch-gantt-dependencyeditor.x-panel-collapsed .x-panel-tl
+{
+	border: 0px none;
+}

@@ -1,0 +1,30 @@
+﻿/*
+ * Ext Gantt 1.2
+ * Copyright(c) 2009-2011 Mats Bryntse Consulting
+ * mats@ext-scheduler.com
+ * http://www.ext-scheduler.com/license.html
+ *
+ */
+
+/* Make sure the event is not displayed absolute when doing drag drop */
+.sch-gantt-dragproxy .sch-gantt-item
+{
+	opacity:0.6;
+	filter: alpha(opacity=60);
+	border-style:dashed;
+}
+
+.sch-gantt-dragproxy .sch-gantt-item .x-resizable-handle
+{
+	opacity:0 !important;
+	filter: alpha(opacity=0);
+}
+
+.sch-gantt-dragproxy .x-dd-drag-ghost {
+	background-color:transparent;
+	white-space:nowrap;
+	border: 0 none;
+	color:#000000;
+	font:11px arial,helvetica,sans-serif;
+	padding:3px 0;
+}

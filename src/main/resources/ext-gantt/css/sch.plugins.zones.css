@@ -1,0 +1,18 @@
+﻿/*
+ * Ext Gantt 1.2
+ * Copyright(c) 2009-2011 Mats Bryntse Consulting
+ * mats@ext-scheduler.com
+ * http://www.ext-scheduler.com/license.html
+ *
+ */
+
+.sch-ganttpanel .sch-zone
+{
+  height:100%;
+  position:absolute;
+  left:0;
+  top:0;
+  z-index:-1;
+  background: url(../images/zonebg.png) repeat;
+}
+

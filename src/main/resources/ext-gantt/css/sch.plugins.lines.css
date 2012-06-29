@@ -1,0 +1,29 @@
+﻿/*
+ * Ext Gantt 1.2
+ * Copyright(c) 2009-2011 Mats Bryntse Consulting
+ * mats@ext-scheduler.com
+ * http://www.ext-scheduler.com/license.html
+ *
+ */
+ 
+.sch-timeline
+{
+  cursor:pointer;
+  width:1px;
+  height:100%;
+  position:absolute;
+  left:0;
+  top:0;
+  border-left:1px dotted #aaa;
+  z-index:101;
+}
+
+div.sch-timeline:hover
+{
+  border-left-style:solid !important;
+}
+
+.sch-ganttpanel .x-grid3-scroller
+{
+    z-index:101;
+}

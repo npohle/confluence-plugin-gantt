@@ -1,0 +1,55 @@
+/*
+ * Some of the CSS styles use icons from the FamFamFam silk icon library http://www.famfamfam.com/
+ */
+
+body
+{
+	padding:20px;
+}
+
+.sch-dirty .sch-gantt-progress-bar
+{
+    background: transparent url(../images/loading2.gif) repeat-x 0 0 !important;
+    width:100% !important;
+}
+
+.icon-zoomtofit
+{
+    background: url(../images/zoom-fit.png) no-repeat left center !important;
+}
+
+.icon-collapseall
+{
+    background: url(../images/up.png) no-repeat left center !important;
+}
+
+.icon-expandall
+{
+    background: url(../images/down.png) no-repeat left center !important;
+}
+
+.icon-add
+{
+    background: url(../images/add.png) no-repeat left center !important;
+}
+
+.icon-save
+{
+    background: url(../images/add.png) no-repeat left center !important;
+}
+
+.icon-delete
+{
+    background: url(../images/delete.png) no-repeat left center !important;
+}
+
+.sch-dependency-line.creating
+{
+    -o-border-image: url("../images/loading2.gif") 1 1 round round;
+    -icab-border-image: url("../images/loading2.gif") 1 1 round round;
+    -khtml-border-image: url("../images/loading2.gif") 1 1 round round;
+    -moz-border-image: url("../images/loading2.gif") 1 1 round round;
+    -webkit-border-image: url(../images/loading2.gif) 27 round round;
+    border-image: url("../images/loading2.gif") 1 1 round round;
+}
+

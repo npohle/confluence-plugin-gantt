@@ -1,0 +1,51 @@
+/*
+ * Ext Gantt 1.2
+ * Copyright(c) 2009-2011 Mats Bryntse Consulting
+ * mats@ext-scheduler.com
+ * http://www.ext-scheduler.com/license.html
+ *
+ */
+ 
+/* Classes for the multiple header rows, based on Condors GroupHeaderGrid plugin */
+td.ux-grid-hd-group-cell,
+td.ux-grid-hd-nogroup-cell {
+	background: url(http://extjs.cachefly.net/ext-3.1.1/resources/images/default/grid/grid3-hrow.gif) repeat-x bottom;
+}
+
+.sch-nested-hdr-tbl
+{
+	width:100%;
+    height:auto;
+}
+
+.sch-nested-hdr-nopad .x-grid3-hd-inner
+{
+	padding:0 !important;
+}
+
+.sch-nested-hdr-nopad td
+{
+	padding:4px 0 !important;
+	text-align:center;
+}
+
+.sch-nested-hdr-nopad .sch-nested-hdr-tbl-cell-last
+{
+	border-right-color:transparent;
+}
+
+.sch-nested-hdr-pad td {
+    text-align:left;
+	border:0 none;
+}
+
+.sch-nested-hdr-pad .x-grid3-hd-inner
+{
+	padding-left:2px !important;
+	padding-right:2px !important;
+}
+
+.sch-nested-hdr-pad td {
+    text-align:left;
+	border:0 none;
+}

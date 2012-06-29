@@ -1,0 +1,33 @@
+﻿/*
+ * Ext Gantt 1.2
+ * Copyright(c) 2009-2011 Mats Bryntse Consulting
+ * mats@ext-scheduler.com
+ * http://www.ext-scheduler.com/license.html
+ *
+ */
+
+.sch-gantt-item .sch-gantt-progressbar-handle
+{
+    position:absolute;
+	bottom:-2px;
+	display:none;
+	width:10px;
+	height:8px;
+	cursor:e-resize !important;
+	z-index:10000;
+	margin-left:-4px;
+	overflow:hidden;
+	background: url(../images/progressbar-handle.png) no-repeat left top;
+}
+
+.sch-event-hover .sch-gantt-progressbar-handle
+{
+	display:block;
+}
+
+.sch-gantt-progress-bar .x-resizable-handle-east,
+.sch-gantt-dragproxy .sch-gantt-progressbar-handle,
+.sch-ganttpanel-readonly .sch-gantt-progressbar-handle
+{
+    display:none;
+}

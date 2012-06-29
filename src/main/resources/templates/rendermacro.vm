@@ -1,0 +1,305 @@
+    <!--Ext and ux styles --> 
+    <link type="text/css" rel="stylesheet" href="http://extjs.cachefly.net/ext-3.3.0/resources/css/ext-all.css"/> 
+    <link href="http://extjs.cachefly.net/ext-3.3.0/examples/ux/css/Spinner.css" rel="stylesheet" type="text/css" /> 
+    <link href="http://extjs.cachefly.net/ext-3.3.0/examples/ux/css/LockingGridView.css" rel="stylesheet" type="text/css" /> 
+    
+    <!--Gantt styles--> 
+    <link href="$baseURL/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/ext-gantt/css/sch-gantt-all.css" rel="stylesheet" type="text/css" /> 
+ 
+    <!--Implementation specific styles--> 
+    <link href="$baseURL/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/ext-gantt/css/examples.css" rel="stylesheet" type="text/css" /> 
+    <link href="basic.css" rel="stylesheet" type="text/css" /> 
+    
+    <!--Ext lib and UX components--> 
+    <script type="text/javascript" src="http://extjs.cachefly.net/ext-3.3.0/adapter/ext/ext-base.js"></script> 
+    <script type="text/javascript" src="http://extjs.cachefly.net/ext-3.3.0/ext-all-debug.js"></script> 
+    <script type="text/javascript" src="http://extjs.cachefly.net/ext-3.3.0/examples/ux/LockingGridView.js"></script> 
+    <script type="text/javascript" src="http://extjs.cachefly.net/ext-3.3.0/examples/ux/Spinner.js"></script> 
+    <script type="text/javascript" src="http://extjs.cachefly.net/ext-3.3.0/examples/ux/SpinnerField.js"></script> 
+ 
+    <!--Gantt components--> 
+    <script src="$baseURL/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/ext-gantt/js/sch-gantt-base-debug.js" type="text/javascript"></script> 
+    <script src="$baseURL/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/ext-gantt/js/sch-gantt-all-debug.js" type="text/javascript"></script> 
+    
+	<!--Application files-->
+	
+	<!-- <script src="$baseURL/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/ext-gantt/js/basic.js" type="text/javascript"></script> --> 
+	<script src="$baseURL/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/gantt4confluence/ConfluenceGanttPanel.js" type="text/javascript"></script>
+
+<div id="gantt-div"></div>
+
+<script>
+Ext.ns('App');
+
+App.Gantt = {
+
+    // Initialize application
+    init: function (serverCfg) {
+        Ext.QuickTips.init();
+
+		var taskStore = new Ext.ux.maximgb.tg.AdjacencyListStore({
+		            defaultExpanded : true,
+		    	    autoLoad : true,
+		            proxy : new Ext.data.HttpProxy({
+		                url : '$baseURL/plugins/servlet/gantt4confluence?action=get&pageid=${pageid}&filename=${filename}.tasks.json',
+		                method:'GET'
+		            }),
+				    reader: new Ext.data.JsonReader({idProperty : 'Id'}, [
+		                    // Mandatory fields
+		     	            {name:'Id'},
+		                    {name:'Name', type:'string'},
+		                    {name:'StartDate', type : 'date', dateFormat:'c'},
+		                    {name:'EndDate', type : 'date', dateFormat:'c'},
+		                    {name:'PercentDone'},
+		                    {name:'ParentId', type: 'auto'},
+		                    {name:'IsLeaf', type: 'bool'},
+		
+		                    // Your task meta data goes here
+		                    {name:'Responsible'},
+		                    {name:'Duration', convert : function(v, data) { return Sch.util.Date.getDurationInDays(Date.parseDate(data.StartDate, 'Y-m-d'), Date.parseDate(data.EndDate, 'Y-m-d')); }}
+		                ]
+		            ),
+		            writer : new Ext.data.JsonWriter({
+			                encode: false,
+			                writeAllFields: true,
+			                listful : true,
+							
+			                render : function(params, baseParams, data) {   // Overridden to skip nesting of data in "jsonData" param
+			                    if (this.encode === true) {
+			            
+			                        Ext.apply(params, baseParams);
+			                        params["data"] = Ext.encode(data);
+			                    } else {
+			                        var jdata = Ext.apply({}, baseParams);
+			                        params.jsonData = data;
+			                    }
+			                }
+			            })
+		        });
+
+        var dependencyStore = new Ext.data.JsonStore({   
+            idProperty : 'Id',
+            autoLoad : true,
+            proxy : new Ext.data.HttpProxy({
+                url : '$baseURL/plugins/servlet/gantt4confluence?action=get&pageid=${pageid}&filename=${filename}.deps.json',
+                method:'GET'
+            }),
+            fields : [
+                // 3 mandatory fields
+                {name:'From'},
+                {name:'To'},
+                {name:'Type'}
+            ]
+        });
+
+        /*
+        var g = new Sch.gantt.GanttPanel({
+            height: 600,
+            width: 1000,
+            renderTo: Ext.Element.get('gantt-div'),
+            leftLabelField: 'Name',
+            highlightWeekends: true,
+            showTodayLine: true,
+            loadMask: true,
+            enableDependencyDragDrop: true,
+            //snapToIncrement : true,
+            stripeRows: true,
+
+            //startDate: new Date(2010, 0, 4),
+            //endDate: Sch.util.Date.add(new Date(2010, 0, 4), Sch.util.Date.WEEK, 20),
+            startDate: new Date(${lowerdatebound-year}, ${lowerdatebound-month}, ${lowerdatebound-day}),
+            endDate: new Date(${upperdatebound-year}, ${upperdatebound-month}, ${upperdatebound-day}),
+            viewPreset: 'weekAndDayLetter',
+
+            eventRenderer: function (taskRecord) {
+                return {
+                    cls : taskRecord.get('Responsible') // Add a CSS class to the task element
+                };
+            },
+			
+            plugins: [ 
+           		new Sch.gantt.plugins.TaskContextMenu(),
+                new Sch.plugins.Pan({enableVerticalPan : true})
+            ],
+            
+            tooltipTpl: new Ext.XTemplate(
+                '<h4 class="tipHeader">{Name}</h4>',
+                '<table class="taskTip">',
+                    '<tr><td>Start:</td> <td align="right">{[values.StartDate.format("y-m-d")]}</td></tr>',
+                    '<tr><td>End:</td> <td align="right">{[values.EndDate.format("y-m-d")]}</td></tr>',
+                    '<tr><td>Progress:</td><td align="right">{PercentDone}%</td></tr>',
+                '</table>'
+            ).compile(),
+
+
+            // Setup your static columns
+            columns: [
+                {
+                    header: 'Tasks',
+                    sortable: true,
+                    dataIndex: 'Name',
+                    locked: true,
+                    width: 250,
+                    editor: new Ext.form.TextField()
+                }
+            ],
+
+            taskStore: taskStore,
+            dependencyStore: dependencyStore,
+            plugins: [
+                new Sch.plugins.Pan(),
+                this.depEditor = new Sch.gantt.plugins.DependencyEditor({
+                    buttons: [
+                        {
+                            text: 'Ok',
+                            scope: this,
+                            handler: function () {
+                                var formPanel = this.depEditor;
+                                formPanel.getForm().updateRecord(formPanel.dependencyRecord);
+                                this.depEditor.collapse();
+                            }
+                        },
+                        {
+                            text: 'Cancel',
+                            scope: this,
+                            handler: function () {
+                                this.depEditor.collapse();
+                            }
+                        },
+                        {
+                            text: 'Delete',
+                            scope: this,
+                            handler: function () {
+                                var formPanel = this.depEditor,
+                                    record = this.depEditor.dependencyRecord;
+                                record.store.remove(record);
+                                formPanel.collapse();
+                            }
+                        }
+                    ]
+                })
+            ],
+            tbar: [
+                {
+                    text: 'Add new task...',
+                    iconCls: 'icon-add',
+                    handler: function () {
+                    	var lastStart = new Date();
+                    	if (taskStore.getCount()>0) {
+	                        lastStart = taskStore.getAt(taskStore.getCount() - 1).get('StartDate');
+						}
+                        var newTask = new taskStore.recordType({
+                                StartDate: lastStart,
+                                EndDate: Sch.util.Date.add(lastStart, Sch.util.Date.DAY, 5),
+                                Name: 'New task',
+                                PercentDone: 0,
+                                ParentId: null,
+                                IsLeaf: true
+                        });
+						taskStore.add(newTask);
+                    }
+                },
+                {
+                    text: 'Add new subtask...',
+                    iconCls: 'icon-add',
+                    handler: function () {
+                    	
+                    	var active = g.getSelectionModel().getSelected();
+                    	if (active) {
+                    		lastStart = active.get('StartDate');
+	                    	var newTask = new taskStore.recordType({
+	                                StartDate: lastStart,
+	                                EndDate: Sch.util.Date.add(lastStart, Sch.util.Date.DAY, 5),
+	                                Name: 'New task',
+	                                PercentDone: 0,
+	                                ParentId: active,
+	                                IsLeaf: true
+	                        });
+							taskStore.add(newTask);
+						}
+                    }
+                },
+                {
+                    text: 'Save',
+                    iconCls: 'icon-disk',
+                    handler: function () {
+                    	var jsontasks = Ext.encode(Ext.pluck(g.taskStore.data.items, 'data'));
+                        Ext.Ajax.request({
+                        	url: '$baseURL/plugins/servlet/gantt4confluence',
+                        	method : 'POST', 
+                        	params: {
+                        		action: 'save', 
+                        		pageid: '${pageid}', 
+                        		filename: '${filename}.tasks.json',
+                        		body: jsontasks
+                        		}, 
+                        	success: function(response){
+                        		
+                        		var jsondeps = Ext.encode(Ext.pluck(g.dependencyStore.data.items, 'data'));
+		                        Ext.Ajax.request({
+		                        	url: '$baseURL/plugins/servlet/gantt4confluence',
+		                        	method : 'POST', 
+		                        	params: {
+		                        		action: 'save', 
+		                        		pageid: '${pageid}', 
+		                        		filename: '${filename}.deps.json',
+		                        		body: jsondeps
+		                        		}, 
+		                        	success: function(response){
+		                        		Ext.MessageBox.alert('Status', 'Changes saved successfully.', response);
+		                        		}, 
+		                        	failure: function(response){ 
+		                        		Ext.MessageBox.alert('Status', 'Failure during save operation.', response);
+		                        		} 
+		                        	});
+                        		 
+                        		}, 
+                        	failure: function(response){ 
+                        		Ext.MessageBox.alert('Status', 'Failure during save operation.', response); 
+                        		} 
+                        	});
+                        
+                        
+                    }
+                },
+                '->',
+                {
+                    xtype: 'label',
+                    text: 'Column Width'
+                },
+                ' ',
+                colSlider
+            ]
+        });
+        */
+        
+        var g = new ConfluenceGanttPanel({
+        	
+            height: 600,
+            width: 1000,
+            renderTo: Ext.Element.get('gantt-div'),
+            leftLabelField: 'Name',
+            highlightWeekends: true,
+            showTodayLine: true,
+            loadMask: true,
+            enableDependencyDragDrop: true,
+            //snapToIncrement : true,
+            stripeRows: true,
+        	confluenceBaseURL: '$baseURL',
+        	confluencePageID: '${pageid}',
+        	confluenceFilename: '${filename}',
+        	
+            region : 'center',
+            taskStore : taskStore,
+            dependencyStore : dependencyStore,
+            //snapToIncrement : true,    // Uncomment this line to get snapping behavior for resizing/dragging.
+            startDate: new Date(${lowerdatebound-year}, ${lowerdatebound-month}, ${lowerdatebound-day}),
+            endDate: new Date(${upperdatebound-year}, ${upperdatebound-month}, ${upperdatebound-day}),
+            viewPreset : 'weekAndDayLetter'
+        });        
+        
+    }
+};
+
+Ext.onReady(function() {App.Gantt.init(); });
+</script>
