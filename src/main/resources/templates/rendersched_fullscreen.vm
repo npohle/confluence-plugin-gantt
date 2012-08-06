@@ -1,0 +1,333 @@
+<html>
+	<head>
+		<!--Ext and ux styles -->
+        
+		<script src="$staticResourcePrefix/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/extjs-4.1.1/ext-all.js" type="text/javascript"></script>
+		
+        <script>
+        	Ext.Loader.setConfig({enabled: false, disableCaching : false });
+        </script>
+        
+        <!--Scheduler styles-->
+		
+        <link href="$staticResourcePrefix/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/scheduler-2.1.5/css/sch-all.css" rel="stylesheet" type="text/css" />
+        <script src="$staticResourcePrefix/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/scheduler-2.1.5/js/sch-all.js" type="text/javascript"></script>
+        
+		
+        <!--Example styles -->
+		
+        <link href="$staticResourcePrefix/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/scheduler-2.1.5/css/examples.css" rel="stylesheet" type="text/css" />
+        <link href="$staticResourcePrefix/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/scheduler-2.1.5/css/editor.css" rel="stylesheet" type="text/css" />
+        
+		
+        <!--Project files-->
+		
+        <script src="$staticResourcePrefix/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/gantt4confluence/ProjectMask.js" type="text/javascript"></script>
+		<link rel="stylesheet" type="text/css" href="$staticResourcePrefix/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/css/normalize.css" />
+        <link rel="stylesheet" type="text/css" href="$staticResourcePrefix/download/resources/com.imaginarymachines.confluence.gantt.gantt4confluence/extjs-4.1.1/resources/css/ext-all-gray.css"/>
+        
+        
+        <style>
+        .verticalAlignTop {vertical-align:top;}
+        .important {border-left:2px dotted red;}
+        .line-text
+        {
+            background-color: rgba(83,13,134,0.7); 
+            bottom: 0;
+            color: #FFEEEE;
+            display: block;
+            font-size: 0.8em;
+            height: 13px;
+            position: absolute;
+            width: inherit;
+            border-right-top-radius:5px;
+            border-right-bottom-radius:5px; 
+            box-shadow:1px 1px 2px #ccc;
+            white-space:nowrap;
+            width:auto;
+            border-top-right-radius: 3px;
+            border-bottom-right-radius: 3px;
+            padding-left:3px;
+            padding-right:3px;
+            bottom: -12px;
+            left:-2px;
+        }
+        </style>
+    </head>
+    <body>
+        <script>
+
+		//var progress = null;				
+		var projectpanels = [];
+
+        Ext.define('Resource', {
+        	extend : 'Sch.model.Resource',
+        	fields: ['Budget','KTR','EstimatedBudget','CurrentBudget','EstimatedETA','CurrentETA','Category']
+        });
+	  
+        Ext.define('Event', {
+        	extend : 'Sch.model.Event',
+        	nameField : 'Title',
+	    	fields: ['Type','EventType','Title','Location']
+        });
+	  	
+        Ext.define('Line', {
+            extend : 'Ext.data.Model',
+            fields: [
+                'Date',
+                'Text',
+                'Cls'
+             ]
+        });
+		
+		function render(json) {
+		
+			  // include Scheduler
+			  			  
+			  var resourceStore = Ext.create("Sch.data.ResourceStore", {
+        		model   : 'Resource',
+        		groupField : 'Category',
+        		sortInfo: { field: 'Id', direction: "ASC" }
+     		  });
+			  
+	          var eventStore = Ext.create("Sch.data.EventStore", {
+	            model   : 'Event'
+	          });
+	          
+	          var lineStore = Ext.create('Ext.data.JsonStore', {
+	              model : 'Line',
+	              data : [
+	                  {
+	                      Date : new Date(),
+	                      Text : 'Today',
+	                      Cls : 'important'
+	                  }
+	              ]
+	          });
+	          
+	          var groupingFeature = Ext.create('Ext.grid.feature.Grouping', {});
+			  
+	          var start = new Date(2011, 1, 1);
+	          
+	          //progress.updateProgress(0.2, 'Initialize Scheduler'); 
+	          
+			  var g = new Sch.panel.SchedulerGrid({
+	            width : window.innerWidth-20,
+	            height : window.innerHeight-20,
+	            enableDragCreation : false,
+	            enableEventDragDrop : false,
+	            eventResizeHandles: 'none',
+	            renderTo: 'scheduler-div',
+	            features : [groupingFeature],
+	            
+	            // Setup view configuration
+	            startDate : start,
+	            endDate : Sch.util.Date.add((new Date()),Sch.util.Date.YEAR, 2),
+	            viewPreset : 'weekAndMonth',
+	            rowHeight : 25,
+				
+	            tipCfg: {cls: "sch-tip", showDelay: 0, hideDelay: 0, autoHide: true, anchor: "b"},
+				tooltipTpl : new Ext.XTemplate(
+					'<ul class="taskTip">',
+					'<li><strong>Milestone:</strong></li>',
+					'<li>{Title}</li>',
+					'</ul>'
+					).compile(),
+
+	            /// Setup your static columns
+	            columns : [
+	                {header : 'Project', width:200, dataIndex : 'Name'}
+	            ],
+				
+	            viewConfig : { forceFit : false },
+	            //eventBarTextField : 'Title',
+	            
+	            resourceStore : resourceStore,
+	            eventStore : eventStore,
+	            
+	            plugins : [
+	                new Sch.plugin.Pan({
+	                    enableVerticalPan : true
+	                }),
+                    Ext.create("Sch.plugin.Lines", {
+                        innerTpl : '<span class="line-text">{Text}</span>',
+                        store : lineStore
+                    })
+	            ],
+	            
+	            tbar : [
+	            	{
+	                    text : 'Reload',
+	                    handler : function() {
+	                        window.location.reload();
+	                    }
+	                },
+                	{
+	                    text : 'Weeks',
+	                    toggleGroup : 'presets',
+	                    enableToggle : true,
+	                    iconCls : 'icon-calendar',
+	                    handler : function() {
+	                        g.switchViewPreset(
+	                        	'weekAndMonth',
+	                        	new Date(2011, 1, 1), 
+	                        	Sch.util.Date.add((new Date()),Sch.util.Date.YEAR, 2)
+	                        );
+	                    }
+	                },
+	                {
+	                    text : 'Months',
+	                    toggleGroup : 'presets',
+	                    iconCls : 'icon-calendar',
+	                    handler : function() {
+	                        g.switchViewPreset(
+	                        	'monthAndYear',
+	                        	new Date(2011, 1, 1), 
+	                        	Sch.util.Date.add((new Date()),Sch.util.Date.YEAR, 2)
+	                        );
+	                    }
+	                },
+	                {
+	                    text : 'Years',
+	                    enableToggle : true,
+	                    toggleGroup : 'presets',
+	                    iconCls : 'icon-calendar',
+	                    handler : function() {
+	                        g.switchViewPreset(
+	                        	'year',
+	                        	new Date(2011, 1, 1), 
+	                        	Sch.util.Date.add((new Date()),Sch.util.Date.YEAR, 2)
+	                        );
+	                    }
+	                },
+                ]
+                
+	          });
+			  
+			  //Ext.create('Ext.resizer.Resizer', {
+			  //      el: g.body,
+			  //      pinned: true,
+			  //      handles: 'se',
+			  // });
+			  
+			  //var jsonstring = '[{"lookback":[{"date":"2012-01-01","ev":"0 EUR","milestone":"kick off"},{"date":"2012-01-07","ev":"100 EUR","milestone":"initial setup"},{"date":"2012-01-14","ev":"500 EUR","milestone":"alpha"},{"date":"2012-01-21","ev":"1000 EUR","milestone":"beta"}],"lookahead":[{"date":"2012-02-01","ev":"2000 EUR","milestone":"release"},{"date":"2012-02-07","ev":"3000 EUR","milestone":"maintainance 1"},{"date":"2012-02-14","ev":"10000 EUR","milestone":"maintainance 2"},{"date":"2012-02-21","ev":"25000 EUR","milestone":"maintainance 3"}],"title":"test","description":"","risks":"","evaluation":"","properties":{"Budget":"5.000 EUR","Estimated ETA":"2012-01-01T00:00:00","Current ETA":"","KTR":"","PfM / tPL":""}},{"lookback":[{"date":"2012-01-01","ev":"0 EUR","milestone":"kick off"},{"date":"2012-01-07","ev":"100 EUR","milestone":"initial setup"},{"date":"2012-01-14","ev":"500 EUR","milestone":"alpha"},{"date":"2012-01-21","ev":"1000 EUR","milestone":"beta"}],"lookahead":[{"date":"2012-02-01","ev":"2000 EUR","milestone":"release"},{"date":"2012-02-07","ev":"3000 EUR","milestone":"maintainance 1"},{"date":"2012-02-14","ev":"10000 EUR","milestone":"maintainance 2"},{"date":"2012-02-21","ev":"25000 EUR","milestone":"maintainance 3"}],"title":"test2","description":"irgendwas anderes","risks":"","evaluation":"","properties":{"Budget":"10.000 EUR","Estimated ETA":"2012-01-01T00:00:00","Current ETA":"","KTR":"","PfM / tPL":""}}]';
+			  //var daten = Ext.JSON.decode(jsonstring);
+			  console.log("Load JSON: "+json);
+			  var daten = Ext.JSON.decode(json);
+			  console.log(daten.length);
+			  
+			  resourceStore.suspendEvents(false);
+			  eventStore.suspendEvents(false);
+			  
+			  for (var index=0; index<daten.length; index++) {
+			  	
+			  	//progress.updateProgress((0.8 / daten.length * index) + 0.2, 'Load '+daten[index].title);
+			  
+			  	console.log(index);
+			    
+			    resourceStore.add({
+			    	'Id': daten[index].title,
+			    	'Name': daten[index].title,
+			    	'Budget':daten[index].properties['Budget'],
+			    	'KTR':daten[index].properties['KTR'],
+			    	'EstimatedETA':daten[index].properties['Estimated ETA'],
+			    	'CurrentETA':daten[index].properties['Current ETA'],
+			    	'EstimatedBudget':daten[index].properties['Estimated Budget'],
+			    	'CurrentBudget':daten[index].properties['Current Budget'],
+			    	'Category':daten[index].properties['Category']
+			    });
+			    
+			    for (var i=0; i<daten[index].lookback.length; i++) {
+			    	
+			    	var startdate = daten[index].lookback[i].date.substring(0,10);
+			    	var enddate = ""; 
+			    				    	
+			    	if (startdate.length==10) {
+				    	
+				    	if (daten[index].lookback[i].end!=null) {enddate = daten[index].lookback[i].end.substring(0,10);}
+				    	if (enddate==null || enddate.length<10) {
+			    			enddate = Ext.Date.format(Ext.Date.add(Ext.Date.parse(startdate, 'Y-m-d'),Ext.Date.DAY, 1),'Y-m-d');
+			    		};
+			    		
+				    	eventStore.add({
+				    		'Id': daten[index].lookback[i].milestone,
+				    		'Name': daten[index].lookback[i].milestone,
+				    		'Title': daten[index].lookback[i].milestone,
+				    		'StartDate': startdate,
+				    		'EndDate': enddate,
+				    		'ResourceId':daten[index].title
+				    	});
+			    	}
+			    };
+
+			    for (var i=0; i<daten[index].lookahead.length; i++) {
+			    	
+			    	var startdate = daten[index].lookahead[i].date.substring(0,10);
+			    	var enddate = "";
+			    	
+			    	if (startdate.length==10) {
+				    	
+				    	if (daten[index].lookahead[i].end!=null) {enddate = daten[index].lookahead[i].end.substring(0,10);}
+				    	if (enddate==null || enddate.length<10) {
+			    			enddate = Ext.Date.format(Ext.Date.add(Ext.Date.parse(startdate, 'Y-m-d'),Ext.Date.DAY, 1),'Y-m-d');
+			    		};
+			    		
+				    	eventStore.add({
+				    		'Id': daten[index].lookahead[i].milestone,
+				    		'Name': daten[index].lookahead[i].milestone,
+				    		'Title': daten[index].lookahead[i].milestone,
+				    		'StartDate': startdate,
+				    		'EndDate': enddate,
+				    		'ResourceId':daten[index].title
+				    	});
+			    	}
+			    };
+			    
+			  };	
+			  
+			  resourceStore. resumeEvents();
+			  eventStore. resumeEvents();
+			  
+			  g.scrollToDate(Sch.util.Date.add((new Date()),Sch.util.Date.DAY, -10), true);
+		}
+		
+		
+		Ext.onReady(function() {
+			
+			//progress = Ext.create('Ext.ProgressBar', {
+			//	renderTo: 'splash',
+			//	width: 300
+			//});
+			
+			//progress.updateProgress(0.1, 'Load Project Data');
+			
+			Ext.Ajax.request({
+				url : '$baseURL/plugins/servlet/gantt4confluence?action=get&pageid=${pageid}&filename=${filename}' ,
+				method: 'GET',
+				success: function ( result, request ) {
+					//progress.updateProgress(0.15, 'Process Project Data');
+					console.log('received '+result.responseText);
+					var jsonstring = result.responseText; 
+					if (jsonstring.length==0) {
+						jsonstring = new String("[{'lookback':[{'date':'','end':'','ev':'','milestone':''}],'lookahead':[{'date':'','end':'','ev':'','milestone':''}],'title':'','description':'','risks':'','evaluation':'','properties':{'Budget':'','Estimated ETA':'','Current ETA':'','KTR':'','PfM / tPL':''}}]");
+					}
+					render(jsonstring);
+					//progress.destroy();
+				},
+				failure: function ( result, request) { 
+					//Ext.MessageBox.alert('Failed', result.responseText);
+					//progress.updateProgress(0.15, 'Process Project Data');
+					console.log("could not load attachment {$filename}... Fallback to empty project set.");
+					var jsonstring = new String("[{'lookback':[{'date':'','end':'','ev':'','milestone':''}],'lookahead':[{'date':'','end':'','ev':'','milestone':''}],'title':'','description':'','risks':'','evaluation':'','properties':{'Budget':'','Estimated ETA':'','Current ETA':'','KTR':'','PfM / tPL':''}}]");
+					render(jsonstring);
+					//progress.destroy(); 
+				} 
+			});
+			
+		});
+		
+		</script>
+		
+		<div id="scheduler-div"></div>
+	</body>
+</html>

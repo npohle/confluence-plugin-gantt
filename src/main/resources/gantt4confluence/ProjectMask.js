@@ -24,67 +24,68 @@ Ext.define('MyApp.view.ui.MyPanel', {
                     layout: {colums:3, type:'table', align:'stretch'},
                     style: 'border-top: 3px solid grey;',
                     title: '',
-                    items: [
-						{
-					        xtype: 'image',
-					        src: 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
-					        style : 'background: transparent no-repeat 0 0; background-image: url(\'http://dev.sencha.com/deploy/ext-4.0.0/resources/themes/images/default/tree/arrows.gif\'); background-position: -16px 0; height: 18px; width: 16px;', 
-					        listeners: {
-								click: {
-				            		element: 'el', //bind to the underlying el property on the panel
-				            		fn: function(e, elem, eObj){
-										console.log('click el');
-										if (elem.style['background-position']=='-16px 0px') {
-											elem.style['background-position']='0px 0px';
-											var trs = this.dom.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.children;
-											for (var line=1; line<trs.length; line++) {
-												trs[line].style.display="none";
-											}
-											this.dom.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.style.height="";
-											this.dom.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.style.height="";
-										} else {
-											elem.style['background-position']='-16px 0px';
-											var trs = this.dom.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.children;
-											for (var line=1; line<trs.length; line++) {
-												trs[line].style.display="table-row";
-											}
-										}
-									}
-				        		}
-							}
-					    },{
-                            xtype: 'checkbox',
-                            itemId: 'checkboxfield',
-                            style: 'border: 0px;background-image:none;',
-                            width: 20,
-                            fieldLabel: ''
-                        },
-                        {
-                            xtype: 'textfield',
-                            itemId: 'titlefield',
-                            width: 154,
-                            style: 'border: 0px;background-image:none;',
-                            fieldLabel: ''
-                        }
+                    items: [{
+    					        xtype: 'image',
+    					        src: 'data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
+    					        style : 'background: transparent no-repeat 0 0; background-image: url(\'http://dev.sencha.com/deploy/ext-4.0.0/resources/themes/images/default/tree/arrows.gif\'); background-position: -16px 0; height: 18px; width: 16px;', 
+    					        listeners: {
+  								      click: {
+  				            		element: 'el', //bind to the underlying el property on the panel
+  				            		fn: function(e, elem, eObj) {
+  										      console.log('click el');
+  										      if (elem.style['background-position']=='-16px 0px') {
+  											      elem.style['background-position']='0px 0px';
+  											      var trs = this.dom.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.children;
+  											      for (var line=1; line<trs.length; line++) {
+  												      trs[line].style.display="none";
+  											      }
+  											      this.dom.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.style.height="";
+  											      this.dom.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.style.height="";
+  										      } else {
+  											      elem.style['background-position']='-16px 0px';
+  											      var trs = this.dom.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.children;
+  											      for (var line=1; line<trs.length; line++) {
+  												      trs[line].style.display="table-row";
+  											      }
+  										      }
+  									      }
+  				        		  }
+							        }
+					          },{
+                      xtype: 'checkbox',
+                      itemId: 'checkboxfield',
+                      style: 'border: 0px;background-image:none;',
+                      width: 20,
+                      fieldLabel: ''
+                    },
+                    {
+                      xtype: 'textfield',
+                      itemId: 'titlefield',
+                      width: 154,
+                      style: 'border: 0px;background-image:none;width:154px',
+                      fieldLabel: '',
+                      cellCls: 'titlefieldcell'
+                      }
                     ]
                 },
                 {
                     xtype: 'panel',
-                  itemId: 'descriptionfieldpanel',
+                    itemId: 'descriptionfieldpanel',
                     border: 0,
                     padding: 5,
                     style: 'border-top: 3px solid grey;',
+                    cellCls: 'descriptionfieldcell',
                     title: '',
                     items: [
                         {
-                            xtype: 'textareafield',
+                          xtype: 'textareafield',
                           itemId: 'descriptionfield',
                           width: 690,
                           style: 'border: 0px;',
-                            fieldLabel: '',
-                            grow: true,
-                            growAppend: ' ',
-                            growMin: 23
+                          fieldLabel: '',
+                          grow: true,
+                          growAppend: ' ',
+                          growMin: 23
                         }
                     ]
                 },
@@ -132,12 +133,13 @@ Ext.define('MyApp.view.ui.MyPanel', {
                         {
                             xtype: 'gridpanel',
                           itemId: 'lookbackgrid',
-			    multiSelect: true,
+                          multiSelect: true,
                             layout: {
                                 type: 'fit'
                             },
                             //store: eventStoreBehind,
-                            store: Ext.create('Ext.data.Store', {model: 'Event'}),
+                            //store: Ext.create('Ext.data.Store', {model: 'Event'}),
+                            store: new Ext.data.Store({fields: ['date', 'end', 'ev', 'milestone']}),
                             title: '',
                             columns: [
                                 {
@@ -175,16 +177,17 @@ Ext.define('MyApp.view.ui.MyPanel', {
                                 {
                                     xtype: 'gridcolumn',
                                     dataIndex: 'milestone',
-                                  flex: 1,
+                                    flex: 1,
                                     text: 'Milestones',
-                                    editor: {
-                                        xtype: 'textfield',
-                                        allowBlank: false
-                                    }
+                                    //editor: {
+                                    //    xtype: 'textfield',
+                                    //    allowBlank: false
+                                    //},
+                                    editor: 'textfield'
                                 }
                             ],
                             viewConfig: {
-				plugins: {
+                        plugins: {
                 			ptype: 'gridviewdragdrop',
                 			dragGroup: 'firstGridDDGroup',
                 			dropGroup: 'secondGridDDGroup'
@@ -205,7 +208,7 @@ Ext.define('MyApp.view.ui.MyPanel', {
                                 Ext.create('Ext.grid.plugin.CellEditing', {})
                             ],
                           listeners: {
-    				edit : function(e) {
+                            edit : function(e) {
                                   var lastrow = e.grid.store.last();
                                   if ((lastrow.get('date')+lastrow.get('end')+lastrow.get('ev')+lastrow.get('milestone')).replace(/null/g, '')!='') {
                                   	e.grid.store.add({ date: '', end: '', ev: '', milestone: '' });
@@ -217,17 +220,18 @@ Ext.define('MyApp.view.ui.MyPanel', {
                 },
                 {
                     xtype: 'panel',
-                  itemId: 'lookaheadgridpanel',
+                    itemId: 'lookaheadgridpanel',
                     border: 0,
                     padding: 5,
                     title: '',
                     items: [
                         {
                             xtype: 'gridpanel',
-			  itemId: 'lookaheadgrid',
+                            itemId: 'lookaheadgrid',
                             width: '100%',
                             //store: eventStoreAhead,
-                            store: Ext.create('Ext.data.Store', {model: 'Event'}),
+                            //store: Ext.create('Ext.data.Store', {model: 'Event'}),
+                            store: new Ext.data.Store({fields: ['date', 'end', 'ev', 'milestone']}),
                             title: '',
                             columns: [
                                 {
@@ -320,9 +324,10 @@ Ext.define('MyApp.view.ui.MyPanel', {
                     ]
                 },
                 {
-                    xtype: 'panel',
-        	    itemId: 'riskfieldpanel',
-                    title: '',
+                   xtype: 'panel',
+        	         itemId: 'riskfieldpanel',
+                   cellCls: 'riskfieldcell',
+                   title: '',
                    border: 0,
                    padding: 5,
                    items: [
@@ -355,6 +360,7 @@ Ext.define('MyApp.view.ui.MyPanel', {
                 {
                     xtype: 'panel',
                   itemId: 'evaluationfieldpanel',
+                  cellCls: 'evaluationfieldcell',
                     title: '',
                    border: 0,
                    padding: 5,
@@ -391,9 +397,9 @@ Ext.define('MyApp.view.ui.MyPanel', {
 });
 
 
-Ext.define('Event', {
-    extend: 'Ext.data.Model',
-    fields: [ 'date', 'end', 'ev', 'milestone' ]
-});
+//Ext.define('Event', {
+//    extend: 'Ext.data.Model',
+//    fields: [ 'date', 'end', 'ev', 'milestone' ]
+//});
 
 

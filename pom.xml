@@ -7,7 +7,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.imaginarymachines.confluence.gantt</groupId>
     <artifactId>gantt4confluence</artifactId>
-    <version>1.1-RELEASE</version>
+    <version>1.2-RELEASE</version>
 
     <organization>
         <name>Imaginary Machines</name>
